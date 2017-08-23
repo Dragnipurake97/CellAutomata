@@ -14,18 +14,16 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
 
 // settings variables
-const unsigned int WIDTH = 1000;
-const unsigned int HEIGHT = 1000;
+const unsigned int WIDTH = 600;
+const unsigned int HEIGHT = 600;
 
 const float FHEIGHT = (float)HEIGHT;
 const float FWIDTH = (float)WIDTH;
 
-int SCREEN_POS[(HEIGHT / 2) * (WIDTH / 2)];
-
 enum cell_type
 {
-	PREDATOR,
-	PREY
+	PREDATOR = 0,
+	PREY = 1
 };
 
 typedef struct cell
@@ -34,7 +32,10 @@ typedef struct cell
 	int X;
 	int Y;
 	int index = ((WIDTH * Y) + X);
-}  CELL;
+} CELL;
+
+CELL Cells[(HEIGHT / 2) * (WIDTH / 2)];
+
 
 /* Array SCREEN_POS has all creatures positions
 *  next pos will be +/- 1 or 0 for X and Y
@@ -100,6 +101,21 @@ int main()
 	float randomX = 250.0f;
 	float randomY = 250.0f;
 
+
+	CELL prey;
+	prey.index = 0;
+	prey.type = PREY;
+	prey.X = 250.0f;
+	prey.Y = 250.f;
+	Cells[0] = prey;
+
+	CELL pred;
+	pred.index = 1;
+	pred.type = PREDATOR;
+	pred.X = 200.0f;
+	pred.Y = 200.f;
+	Cells[1] = pred;
+
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
@@ -109,16 +125,21 @@ int main()
 		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		randomX += (std::rand() % 3) - 1; // Minus 1 after to allow for negative values
-		randomY += (std::rand() % 3) - 1; 
-
-		transform = glm::vec3((randomX * (2.0f / FWIDTH)) - 0.5f, (randomY * (2.0f / FHEIGHT)) - 0.5f, 0.0f);
-
 		shader.use();
-		shader.setVec3("transform", transform);
-
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 6);
+
+		for (int i = 0; i < 2; i++)
+		{
+			Cells[i].X += (std::rand() % 3) - 1; // Minus 1 after to allow for negative values
+			Cells[i].Y += (std::rand() % 3) - 1;
+
+			transform = glm::vec3((Cells[i].X * (2.0f / FWIDTH)) - 0.5f, (Cells[i].Y * (2.0f / FHEIGHT)) - 0.5f, 0.0f);
+
+			shader.setVec3("transform", transform);
+			shader.setInt("type", Cells[i].type);
+
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+		}
 
 		glBindVertexArray(0);
 
