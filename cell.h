@@ -13,6 +13,7 @@ typedef struct cell_info
 	int health;
 	int x;
 	int y;
+	bool isNew;
 } CELL;
 
 extern const int WIDTH;
@@ -28,4 +29,6 @@ namespace cell
 	void generatePrey(int x, int y);
 	void newPrey(int x, int y);
 	void move(CELL &cell, int x, int y);
+	void overwriteCell(int x, int y, cell_type type);
+	void consumePrey(CELL &cell);
 }

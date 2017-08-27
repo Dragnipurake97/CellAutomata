@@ -17,7 +17,9 @@ const int HEIGHT = 1000;
 
 const float FHEIGHT = (float)HEIGHT;
 const float FWIDTH = (float)WIDTH;
-const  int CELLCOUNT = (HEIGHT / 2) * (WIDTH / 2);
+const int CELLCOUNT = (HEIGHT / 2) * (WIDTH / 2);
+
+bool isDebugging = false;
 
 // Prototypes
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -26,12 +28,8 @@ void processInput(GLFWwindow *window);
 
 CELL Cells[CELLCOUNT];
 
-/* Array SCREEN_POS has all creatures positions
-*  next pos will be +/- 1 or 0 for X and Y
-*  pos conversion for index will be: ((WIDTH * Y) + X)
-*  next pos conversion for index will be: ((WIDTH * (Y + y_change)) + (X + x_change))
-*  check next pos for out of bounds and type
-*  convert index to screen coords: (X * (2.0f / FWIDTH)) - 1, (Y * (2.0f / FHEIGHT)) - 1
+/* SPACE = Spawn PREY at screen centre
+*  P = Spawn PREDATOR at screen centre
 */
 
 
@@ -100,7 +98,8 @@ int main()
 	{
 		processInput(window);
 
-		Sleep(100);
+		if(isDebugging)
+			Sleep(1000);
 
 		// Clear Screen
 		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -114,13 +113,14 @@ int main()
 			// Only want to bother with living cells
 			if (Cells[i].type != DEAD)
 			{
+				cell::update(Cells[i]);
 				// Draw then updated to avoid drawing dead cell left behind from movement
 				transform = glm::vec3((Cells[i].x * (4.0f / FWIDTH)), (Cells[i].y * (4.0f / FHEIGHT)), 0.0f);
 				shader.setVec3("transform", transform);
 				shader.setInt("type", Cells[i].type);
 				glDrawArrays(GL_TRIANGLES, 0, 6);
 
-				cell::update(Cells[i]);
+				//cell::update(Cells[i]);
 			}
 		}
 
@@ -145,7 +145,11 @@ void processInput(GLFWwindow *window)
 {
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
-	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+	if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS) // Spawn Prey
 		cell::newPrey(WIDTH / 4, HEIGHT / 4);
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+		cell::overwriteCell(WIDTH / 4, HEIGHT / 4, PREDATOR);
+	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+		isDebugging = true;
 
 }
